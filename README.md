@@ -79,7 +79,7 @@
 **1. 克隆项目**
 
 ```bash
-git clone https://gitee.com/rongxuan66/xuan-card-issuance.git
+git https://github.com/rongxuan66/xuan-.git
 cd xuan-card-issuance
 ```
 
