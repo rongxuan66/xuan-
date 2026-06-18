@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>订单查询 · 账号商城</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="announce-bar"><div class="marquee"></div></div>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo"><span class="dot"></span>账号商城</a>
+    <div class="nav-links">
+      <a href="orders.html" class="active">📋 <span>订单</span></a>
+      <a href="profile.html">👤 <span>我的</span></a>
+    </div>
+  </div>
+</header>
+
+<section class="order-page">
+  <div class="container">
+
+    <!-- 查询区 -->
+    <div class="glass-card" style="padding:20px 24px;margin-bottom:24px">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+        <div style="flex:1;min-width:220px">
+          <label style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:4px;display:block">订单号查询</label>
+          <input class="form-control" id="searchOrderNo" type="text" placeholder="输入订单号（如 RX20260512...）">
+        </div>
+        <button class="filter-btn" onclick="searchOrder()" style="height:42px">🔍 查询</button>
+        <button class="filter-reset" onclick="resetOrders()" style="height:42px">显示本地订单</button>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:#94a3b8" id="resultHint">
+        共 <b id="orderCount">0</b> 条订单
+      </div>
+    </div>
+
+    <!-- 订单列表 -->
+    <div id="orderList"></div>
+    <div id="orderEmpty" style="display:none;text-align:center;padding:60px 0;color:#94a3b8">
+      <p style="font-size:48px;margin-bottom:12px">📭</p>
+      <p style="font-size:14px">暂无订单记录</p>
+      <p style="font-size:12px;margin-top:4px">下单后订单将显示在这里</p>
+    </div>
+
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>© 2026 账号商城</p>
+    <p class="service-wechat" data-label="客服微信" style="margin-top:4px">客服微信：kefu001</p>
+  </div>
+</footer>
+
+<nav class="mobile-tabbar">
+  <div class="tab-items">
+    <button class="tab-item" onclick="location.href='index.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>首页
+    </button>
+    <button class="tab-item active" onclick="location.href='orders.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>订单
+    </button>
+    <button class="tab-item" onclick="location.href='profile.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>我的
+    </button>
+  </div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+$(function () {
+  initAuth();
+  // 公告
+  API.getAnnouncements().then(function (res) {
+    var data = handleResponse(res);
+    if (data && data.length) {
+      var texts = data.map(function (a) { return a.content; });
+      $('.announce-bar .marquee').html(texts.concat(texts).map(function (t) { return '<span>' + t + '</span>'; }).join(''));
+    }
+  });
+  // 默认加载
+  loadSiteConfig();
+  if (Auth.isLoggedIn()) {
+    loadMyOrders();
+  } else {
+    renderOrderList(OrderStore.getAll());
+    $('#orderCount').text(OrderStore.getAll().length);
+  }
+});
+
+function initAuth() {
+  if (!Auth.isLoggedIn()) {
+    $('.nav-links').html(
+      '<a href="orders.html" class="active">📋 <span>查订单</span></a>'
+      + '<a href="login.html">🔑 <span>登录/注册</span></a>'
+    );
+    return;
+  }
+  Auth.getProfile().then(function (res) {
+    var data = handleResponse(res);
+    if (data) {
+      Auth.saveSession(Auth.getToken(), data);
+      $('.nav-links').html(
+        '<a href="orders.html" class="active">📋 <span>我的订单</span></a>'
+        + '<span style="font-size:13px;color:var(--text-muted);cursor:pointer" onclick="location.href=\'profile.html\'">👤 ' + (data.nickname || data.phone) + '</span>'
+        + '<a href="javascript:void(0)" onclick="handleLogout()" style="font-size:12px;color:#94a3b8">退出</a>'
+      );
+      loadMyOrders();
+    } else {
+      Auth.logout();
+      $('.nav-links').html(
+        '<a href="orders.html" class="active">📋 <span>查订单</span></a>'
+        + '<a href="login.html">🔑 <span>登录/注册</span></a>'
+      );
+      resetOrders();
+    }
+  }).fail(function () {
+    $('.nav-links').html(
+      '<a href="orders.html" class="active">📋 <span>查订单</span></a>'
+      + '<a href="login.html">🔑 <span>登录/注册</span></a>'
+    );
+    resetOrders();
+  });
+}
+
+function loadMyOrders() {
+  Auth.getMyOrders({ page: 1, pageSize: 100 }).then(function (res) {
+    var data = handleResponse(res);
+    if (data && data.list) {
+      renderOrderListFromApi(data.list);
+      $('#orderCount').text(data.total || data.list.length);
+      $('#resultHint').html('共 <b>' + (data.total || data.list.length) + '</b> 条订单（我的订单）');
+    }
+  }).fail(function () {
+    resetOrders();
+  });
+}
+
+// 通过订单号查询（调用后端API）
+function searchOrder() {
+  var orderNo = $('#searchOrderNo').val().trim();
+  if (!orderNo) { toast('请输入订单号'); return; }
+
+  API.getOrder(orderNo).then(function (res) {
+    if (res && res.code === 0 && res.data) {
+      var o = res.data;
+      var displayOrders = [{
+        orderNo: o.order_no,
+        productId: o.product_id,
+        productTitle: o.product_title,
+        productImage: o.product_image || 'https://placehold.co/120x120/f1f5f9/94a3b8?text=N/A',
+        price: Number(o.price) || 0,
+        phone: o.phone || '',
+        status: o.status,
+        account: o.account || '',
+        password: o.password || '',
+        createdAt: o.created_at || '',
+      }];
+      renderOrderList(displayOrders);
+      $('#orderCount').text('1');
+      $('#resultHint').html('找到 <b>1</b> 条订单 · <a href="javascript:resetOrders()" style="color:#18a058">显示全部</a>');
+      // 同步到本地
+      if (o.status === 'paid' && o.account) {
+        var local = OrderStore.getByNumber(o.order_no);
+        if (!local) OrderStore.add(displayOrders[0]);
+        else {
+          local.status = o.status;
+          local.account = o.account;
+          local.password = o.password;
+          localStorage.setItem('red_orders', JSON.stringify(OrderStore.getAll()));
+        }
+      }
+    } else {
+      var local = OrderStore.getByNumber(orderNo);
+      if (local) {
+        renderOrderList([local]);
+        $('#orderCount').text('1');
+        $('#resultHint').html('找到 <b>1</b> 条本地订单（服务器未找到） · <a href="javascript:resetOrders()" style="color:#18a058">显示全部</a>');
+      } else {
+        $('#orderList').empty();
+        $('#orderEmpty').show();
+        $('#orderCount').text('0');
+        $('#resultHint').html('未找到订单"' + orderNo + '" · <a href="javascript:resetOrders()" style="color:#18a058">显示全部</a>');
+      }
+    }
+  }).fail(function () {
+    var local = OrderStore.getByNumber(orderNo);
+    if (local) {
+      renderOrderList([local]);
+      $('#orderCount').text('1');
+      $('#resultHint').html('找到 <b>1</b> 条本地订单（服务器连接失败） · <a href="javascript:resetOrders()" style="color:#18a058">显示全部</a>');
+    } else {
+      $('#orderList').empty();
+      $('#orderEmpty').show();
+      $('#orderCount').text('0');
+      $('#resultHint').html('服务器连接失败，未找到本地订单');
+    }
+  });
+}
+
+function resetOrders() {
+  $('#searchOrderNo').val('');
+  if (Auth.isLoggedIn()) {
+    loadMyOrders();
+  } else {
+    var all = OrderStore.getAll();
+    renderOrderList(all);
+    $('#orderEmpty').toggle(!all.length);
+    $('#orderCount').text(all.length);
+    $('#resultHint').html('共 <b>' + all.length + '</b> 条本地订单');
+  }
+}
+
+function renderOrderList(orders) {
+  var $list = $('#orderList');
+  if (!orders || !orders.length) {
+    $list.empty(); $('#orderEmpty').show(); return;
+  }
+  $('#orderEmpty').hide();
+
+  $list.html(orders.map(function (o) {
+    var isPaid = o.status === 'paid';
+    return '<div class="order-card" onclick="location.href=\'order-detail.html?no=' + o.orderNo + '\'">'
+      + '<div class="order-header">'
+      + '<span class="order-no">' + o.orderNo + '</span>'
+      + '<span class="order-status ' + (isPaid ? 'paid' : 'pending') + '">' + (isPaid ? '已支付' : (o.status === 'refunded' ? '已退款' : '待支付')) + '</span>'
+      + '</div>'
+      + '<div class="order-body">'
+      + '<div class="order-img"><img src="' + (o.productImage || 'https://placehold.co/120x120/f1f5f9/94a3b8?text=N/A') + '" alt="" loading="lazy"></div>'
+      + '<div class="order-info">'
+      + '<div class="order-title">' + o.productTitle + '</div>'
+      + '<div class="order-meta">' + (o.phone || '未填手机号') + ' · ' + (o.createdAt || '') + '</div>'
+      + '</div>'
+      + '<div class="order-price">¥' + Number(o.price).toFixed(2) + '</div>'
+      + '</div>'
+      + '<div style="text-align:right;margin-top:2px;font-size:11px;color:#18a058">查看详情 →</div>'
+      + '</div>';
+  }).join(''));
+}
+
+function renderOrderListFromApi(orders) {
+  var $list = $('#orderList');
+  if (!orders || !orders.length) {
+    $list.empty(); $('#orderEmpty').show(); return;
+  }
+  $('#orderEmpty').hide();
+
+  $list.html(orders.map(function (o) {
+    var isPaid = o.status === 'paid';
+    return '<div class="order-card" onclick="location.href=\'order-detail.html?no=' + o.order_no + '\'">'
+      + '<div class="order-header">'
+      + '<span class="order-no">' + o.order_no + '</span>'
+      + '<span class="order-status ' + (isPaid ? 'paid' : 'pending') + '">' + (isPaid ? '已支付' : (o.status === 'refunded' ? '已退款' : '待支付')) + '</span>'
+      + '</div>'
+      + '<div class="order-body">'
+      + '<div class="order-img"><img src="' + (o.product_image || 'https://placehold.co/120x120/f1f5f9/94a3b8?text=N/A') + '" alt="" loading="lazy"></div>'
+      + '<div class="order-info">'
+      + '<div class="order-title">' + o.product_title + '</div>'
+      + '<div class="order-meta">' + (o.phone || '未填手机号') + ' · ' + (o.created_at || '') + '</div>'
+      + '</div>'
+      + '<div class="order-price">¥' + Number(o.price).toFixed(2) + '</div>'
+      + '</div>'
+      + '<div style="text-align:right;margin-top:2px;font-size:11px;color:#18a058">查看详情 →</div>'
+      + '</div>';
+  }).join(''));
+}
+
+function handleLogout() {
+  Auth.logout();
+  toast('已退出登录');
+  location.href = 'index.html';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "dangerouslySkipPermissions": true,
+  "defaultMode": "bypassPermissions",
+  "alwaysAllowCommands": true,
+  "alwaysAllowFileWrites": true,
+  "alwaysAllowFileReads": true
+}

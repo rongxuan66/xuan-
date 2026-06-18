@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>订单详情 · 账号商城</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="announce-bar"><div class="marquee"></div></div>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo"><span class="dot"></span>账号商城</a>
+    <div class="nav-links">
+      <a href="orders.html">📋 <span>订单</span></a>
+      <a href="profile.html">👤 <span>我的</span></a>
+    </div>
+  </div>
+</header>
+
+<div class="breadcrumb">
+  <div class="container">
+    <a href="index.html">首页</a> / <a href="orders.html">订单列表</a> / 订单详情
+  </div>
+</div>
+
+<section class="order-detail-page">
+  <div class="container">
+
+    <div class="detail-grid" style="gap:28px">
+
+      <!-- 左：订单信息卡片 -->
+      <div>
+        <div class="order-detail-card">
+          <h3 style="font-size:18px;font-weight:800;color:#111827;margin-bottom:4px">订单详情</h3>
+          <p style="font-size:12px;color:#94a3b8;margin-bottom:18px" id="odOrderNo"></p>
+
+          <div class="detail-row"><span class="detail-label">商品名称</span><span class="detail-value" id="odTitle"></span></div>
+          <div class="detail-row"><span class="detail-label">订单金额</span><span class="detail-value" style="color:#ef4444" id="odPrice"></span></div>
+          <div class="detail-row"><span class="detail-label">支付方式</span><span class="detail-value" id="odPayMethod"></span></div>
+          <div class="detail-row"><span class="detail-label">手机号</span><span class="detail-value" id="odPhone"></span></div>
+          <div class="detail-row"><span class="detail-label">支付时间</span><span class="detail-value" id="odPayTime"></span></div>
+          <div class="detail-row"><span class="detail-label">下单时间</span><span class="detail-value" id="odTime"></span></div>
+          <div class="detail-row"><span class="detail-label">订单状态</span><span class="detail-value" id="odStatus"></span></div>
+          <div id="odCustomData" style="display:none"></div>
+        </div>
+
+        <!-- 订单信息 -->
+        <div class="order-detail-card" style="margin-top:16px" id="odAccountCard">
+          <h4 style="font-size:15px;font-weight:700;color:#111827;margin-bottom:12px">📦 订单信息</h4>
+          <div class="detail-row"><span class="detail-label">卡密</span><span class="detail-value" id="odCardNo" style="font-family:monospace;word-break:break-all"></span></div>
+          <button class="copy-btn" onclick="copyCardNo()" style="margin-top:12px">📋 复制卡密</button>
+        </div>
+
+        <!-- 轮询支付状态 -->
+        <div class="order-detail-card" style="margin-top:16px;display:none" id="odPendingCard">
+          <h4 style="font-size:15px;font-weight:700;color:#e67e22;margin-bottom:12px">⏳ 支付处理中</h4>
+          <p style="font-size:13px;color:#94a3b8">正在等待支付确认，请稍候...</p>
+          <button class="copy-btn" onclick="checkPayStatus()" style="margin-top:8px">🔄 刷新支付状态</button>
+        </div>
+      </div>
+
+      <!-- 右：使用说明 -->
+      <div>
+        <div class="order-detail-card">
+          <h3 style="font-size:18px;font-weight:800;color:#111827;margin-bottom:16px">📝 使用说明</h3>
+          <div class="rich-content" id="odRichContent">
+            <p>加载中...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="text-align:center;margin-top:24px">
+      <a href="orders.html" style="display:inline-block;padding:10px 28px;border-radius:20px;background:var(--card-bg);border:1px solid var(--border-glass);font-size:13px;color:var(--text-muted);transition:all var(--fast) var(--ease)">← 返回订单列表</a>
+    </div>
+
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container"><p>© 2026 账号商城</p></div>
+</footer>
+
+<nav class="mobile-tabbar">
+  <div class="tab-items">
+    <button class="tab-item" onclick="location.href='index.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>首页
+    </button>
+    <button class="tab-item" onclick="location.href='orders.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>订单
+    </button>
+    <button class="tab-item" onclick="location.href='profile.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>我的
+    </button>
+  </div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+<script>
+var currentCardNo = '';
+var currentOrderNo = '';
+
+$(function () {
+  // 公告
+  API.getAnnouncements().then(function (res) {
+    var data = handleResponse(res);
+    if (data && data.length) {
+      var texts = data.map(function (a) { return a.content; });
+      $('.announce-bar .marquee').html(texts.concat(texts).map(function (t) { return '<span>' + t + '</span>'; }).join(''));
+    }
+  });
+
+  loadSiteConfig();
+  var orderNo = new URLSearchParams(location.search).get('no');
+  if (!orderNo) { showNotFound(); return; }
+  currentOrderNo = orderNo;
+  loadOrder(orderNo);
+});
+
+function loadOrder(orderNo) {
+  API.getOrder(orderNo).then(function (res) {
+    if (!res || res.code !== 0 || !res.data) {
+      // 降级：尝试本地存储
+      var local = OrderStore.getByNumber(orderNo);
+      if (local) { renderOrder(local); return; }
+      showNotFound(); return;
+    }
+    var o = res.data;
+    // 更新本地存储
+    if (o.status === 'paid' && o.account) {
+      var localOrders = OrderStore.getAll();
+      var existing = localOrders.find(function (x) { return x.orderNo === o.order_no; });
+      if (existing) {
+        existing.status = o.status;
+        existing.account = o.account;
+              } else {
+        OrderStore.add({
+          orderNo: o.order_no,
+          productId: o.product_id,
+          productTitle: o.product_title,
+          productImage: o.product_image || '',
+          price: Number(o.price) || 0,
+          phone: o.phone || '',
+          status: o.status,
+          account: o.account || '',
+                    createdAt: o.created_at || '',
+        });
+      }
+    }
+    renderOrder(o);
+  }).fail(function () {
+    // 降级：尝试本地存储
+    var local = OrderStore.getByNumber(orderNo);
+    if (local) { renderOrder(local); return; }
+    showNotFound();
+  });
+}
+
+function renderOrder(order) {
+  var orderNo = order.order_no || order.orderNo;
+  var title = order.product_title || order.productTitle;
+  var price = Number(order.price) || 0;
+  var phone = order.phone || '';
+  var status = order.status || '';
+  var account = order.account || '';
+  var password = order.password || '';
+  var createdAt = order.created_at || order.createdAt || '';
+  var paidAt = order.paid_at || '';
+  var payMethod = order.pay_method || '';
+
+  document.title = '订单 ' + orderNo + ' · 账号商城';
+  $('#odOrderNo').text('订单号：' + orderNo);
+  $('#odTitle').text(title);
+  $('#odPrice').text('¥' + price.toFixed(2));
+  $('#odPayMethod').text(payMethod || '-');
+  $('#odPhone').text(phone || '未填写');
+  $('#odTime').text(createdAt);
+  $('#odPayTime').text(paidAt || '-');
+
+  var deliveryType = order.delivery_type || 'card';
+  var isUrlDelivery = deliveryType === 'url';
+  if (status === 'paid') {
+    $('#odStatus').html('<span class="order-status paid">已支付</span>');
+    if (isUrlDelivery) {
+      // URL接口调用模式：解析API调用结果，不展示链接给用户
+      $('#odAccountCard').show();
+      $('#odAccountCard h4').text('🤖 交付结果');
+      var apiResult = null;
+      try { apiResult = typeof account === 'string' ? JSON.parse(account) : account; } catch (e) { apiResult = null; }
+      if (apiResult && apiResult.success) {
+        var statusColor = apiResult.httpStatus >= 200 && apiResult.httpStatus < 300 ? '#16a34a' : '#e67e22';
+        var respDisplay = apiResult.responseBody || '';
+        if (respDisplay.length > 500) respDisplay = respDisplay.substring(0, 500) + '...';
+        $('#odCardNo').html(
+          '<div style="background:#f0fdf4;padding:12px 16px;border-radius:8px;margin-bottom:10px;border:1px solid #bbf7d0">'
+          + '<b style="color:#16a34a">✅ API调用成功</b>'
+          + '<div style="margin-top:6px;font-size:13px;color:#64748b">'
+          + 'HTTP状态: <span style="color:' + statusColor + '">' + apiResult.httpStatus + '</span> · '
+          + '耗时: ' + apiResult.elapsedMs + 'ms</div>'
+          + '<div style="margin-top:6px;font-size:12px;color:#94a3b8;word-break:break-all;max-height:120px;overflow-y:auto;background:#f8fafc;padding:8px;border-radius:4px">'
+          + (respDisplay || '（空响应）') + '</div></div>'
+        );
+        $('.copy-btn').hide();
+      } else if (apiResult && !apiResult.success) {
+        $('#odCardNo').html(
+          '<div style="background:#fef2f2;padding:12px 16px;border-radius:8px;margin-bottom:10px;border:1px solid #fecaca">'
+          + '<b style="color:#ef4444">❌ API调用失败</b>'
+          + '<div style="margin-top:6px;font-size:13px;color:#64748b">错误: ' + (apiResult.error || '未知') + '</div>'
+          + '<div style="margin-top:4px;font-size:12px;color:#94a3b8">耗时: ' + apiResult.elapsedMs + 'ms</div></div>'
+        );
+        $('.copy-btn').hide();
+      } else {
+        $('#odCardNo').html(
+          '<div style="background:#fef2f2;padding:12px 16px;border-radius:8px;margin-bottom:10px">'
+          + '<b style="color:#ef4444">无法解析API结果</b></div>'
+        );
+        $('.copy-btn').hide();
+      }
+    } else if (account) {
+      currentCardNo = account || '';
+      $('#odAccountCard').show();
+      $('#odAccountCard h4').text('📦 订单信息');
+      $('#odCardNo').text(account);
+      $('.copy-btn').text('📋 复制卡密').off('click').on('click', copyCardNo).show();
+    } else {
+      $('#odAccountCard').hide();
+    }
+    $('#odPendingCard').hide();
+  } else if (status === 'pending') {
+    $('#odStatus').html('<span class="order-status pending">待支付</span>');
+    $('#odAccountCard').hide();
+    $('#odPendingCard').show();
+  } else if (status === 'refunded') {
+    $('#odStatus').html('<span class="order-status" style="background:#f1f5f9;color:#64748b">已退款</span>');
+    $('#odAccountCard').hide();
+    $('#odPendingCard').hide();
+  } else {
+    $('#odStatus').text(status);
+    $('#odAccountCard').hide();
+    $('#odPendingCard').hide();
+  }
+
+  // 自定义字段（使用产品定义的字段标签）
+  var customData = order.custom_data;
+  if (typeof customData === 'string') {
+    try { customData = JSON.parse(customData); } catch (e) { customData = null; }
+  }
+  var fieldLabels = {};
+  var productCustomFields = order.product_custom_fields;
+  if (typeof productCustomFields === 'string') {
+    try { productCustomFields = JSON.parse(productCustomFields); } catch (e) { productCustomFields = []; }
+  }
+  if (Array.isArray(productCustomFields)) {
+    productCustomFields.forEach(function (f) { if (f.var) fieldLabels[f.var] = f.label || f.var; });
+  }
+  if (customData && Object.keys(customData).length) {
+    var html = '';
+    Object.keys(customData).forEach(function (k) {
+      html += '<div class="detail-row"><span class="detail-label">' + (fieldLabels[k] || k) + '</span><span class="detail-value">' + (customData[k] || '') + '</span></div>';
+    });
+    $('#odCustomData').html(html).show();
+  }
+
+  // 使用说明内容
+  var payMethodMap = { wechat: '微信', alipay: '支付宝', qq: 'QQ' };
+  var payMethodText = payMethodMap[payMethod] || payMethod || '未知';
+  $('#odRichContent').html(
+    '<h4 style="font-weight:700;margin-bottom:10px">📱 ' + title + '</h4>'
+    + (account ? (isUrlDelivery
+      ? '<div style="background:#f0fdf4;padding:14px 18px;border-radius:10px;margin:12px 0;border:1px solid #bbf7d0">'
+      + '<b style="color:#16a34a">✅ 订单已支付，API已自动调用</b>'
+      + '<p style="margin:8px 0 0;font-size:13px;color:#166534">系统已自动调用交付接口，结果见左侧"交付结果"卡片</p></div>'
+      : '<div style="background:#f0fdf4;padding:14px 18px;border-radius:10px;margin:12px 0;border:1px solid #bbf7d0">'
+      + '<b style="color:#16a34a">✅ 订单已支付，卡密已发放</b>'
+      + '<p style="margin:8px 0 0;font-size:13px;color:#166534">请在左侧卡片中查看并复制卡密</p></div>') : '')
+    + '<p>感谢您的购买！以下是账号使用的详细说明：</p>'
+    + '<ul style="padding-left:20px;margin:10px 0">'
+    + '<li>请妥善保管' + (isUrlDelivery ? '订单信息' : '卡密信息') + '</li>'
+    + '<li>建议在收到' + (isUrlDelivery ? '交付结果' : '卡密') + '后尽快使用</li>'
+    + '<li>绑定您的手机号和邮箱以确保账号安全</li>'
+    + '<li>如遇到任何问题，请联系客服微信：<b class="service-wechat-inline">' + (window.siteConfig.service_wechat || 'kefu001') + '</b></li>'
+    + '</ul>'
+    + '<div style="background:rgba(24,160,88,0.06);padding:12px 16px;border-radius:10px;margin-top:12px;font-size:13px">'
+    + '<b>💡 订单信息：</b><br>'
+    + '订单号：' + orderNo + '<br>'
+    + '支付方式：' + payMethodText + '<br>'
+    + '下单时间：' + createdAt + '<br>'
+    + (paidAt ? '支付时间：' + paidAt + '<br>' : '')
+    + '</div>'
+  );
+
+function checkPayStatus() {
+  if (!currentOrderNo) return;
+  API.getPaymentStatus(currentOrderNo).then(function (res) {
+    if (res && res.code === 0 && res.data) {
+      if (res.data.status === 'paid') {
+        toast('支付成功！刷新订单信息...');
+        setTimeout(function () { loadOrder(currentOrderNo); }, 800);
+      } else {
+        toast('订单状态：' + res.data.status + '，请继续等待');
+      }
+    }
+  }).fail(function () { toast('查询失败，请重试'); });
+}
+
+function showNotFound() {
+  $('.order-detail-page .container').html(
+    '<div style="text-align:center;padding:80px 0"><p style="font-size:44px">🔍</p>'
+    + '<p style="color:#94a3b8;margin:10px 0">订单不存在</p>'
+    + '<a href="orders.html" style="color:#18a058">返回订单列表 →</a></div>'
+  );
+}
+
+function copyCardNo() {
+  var $btn = $('.copy-btn').first();
+  if (!currentCardNo) { toast('暂无卡密可复制'); return; }
+  var done = function () {
+    $btn.text('📋 复制卡密').prop('disabled', false);
+  };
+  var copied = function () {
+    $btn.text('✓ 已复制').css({background:'#16a34a',color:'#fff'}).prop('disabled', false);
+    setTimeout(function () {
+      $btn.css({background:'',color:''});
+      done();
+    }, 1800);
+  };
+  $btn.text('复制中...').prop('disabled', true);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(currentCardNo).then(function () {
+      toast('已复制到剪贴板'); copied();
+    }).catch(function () {
+      toast('复制失败'); done();
+    });
+  } else {
+    var ta = $('<textarea>').val(currentCardNo).appendTo('body').select();
+    try { document.execCommand('copy'); toast('已复制到剪贴板'); copied(); } catch (e) { toast('复制失败'); done(); }
+    ta.remove();
+  }
+}
+</script>
+</body>
+</html>
