@@ -2,7 +2,7 @@
 
 一套完整的自动发卡商城系统，支持用户自助购买、下单即发号，无需人工干预。
 
--演示地址 [ch.7i0.cn]http://ch.7i0.cn)
+-演示地址 [ch.7i0.cn]http://ch.7i0.cn)  其他项目：http://www.7i0.cn/
 
 -qq交流群 【Rx系列交流群】：https://qm.qq.com/q/n15Lhgh7hK
 
